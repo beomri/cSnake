@@ -12,6 +12,7 @@ int main(int argc, char* args[])
     check(window,"Couldn't create window!");
 
     SDL_Surface* surf = SDL_GetWindowSurface(window);
+    check(surf, "Couldn't find window surface");
 
     while(TRUE)
     {

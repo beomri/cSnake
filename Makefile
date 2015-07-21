@@ -1,4 +1,4 @@
-OBJS="snake.c"
+OBJS="game_main.c"
 
 all:
 	make linux
