@@ -1,14 +1,7 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include "dbg.h"
-
-#define TRUE 1
-#define FALSE 0
-
-#define W_WIDTH 600
-#define W_HEIGHT 400
-
-#define COLOR_BROWN 175,145,70 
+#include "consts.h"
 
 
 int main(int argc, char* args[])
