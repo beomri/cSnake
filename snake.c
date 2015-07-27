@@ -45,6 +45,11 @@ int add_body_to_snake(snake* c_snake)
     return TRUE;
 }
 
+void change_dir(snake* c_snake, int dir)
+{
+    c_snake->dir = dir;
+}
+
 void move_snake(snake* c_snake)
 {
     int temp_x = c_snake->head->pos_x;
@@ -64,7 +69,8 @@ void move_snake(snake* c_snake)
 void free_snake(snake* new_snake)
 {
     free(new_snake->head);
-    new_snake->first->prev->next = NULL;
+    if(new_snake->first)
+        new_snake->first->prev->next = NULL;
     s_body* temp = new_snake->first;
     s_body* next = NULL;
     while(temp)
