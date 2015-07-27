@@ -21,6 +21,19 @@ void draw_all(SDL_Surface* surf ,snake* s)
                   .w = EDGE,
                   .h = EDGE};
     SDL_FillRect(surf, &r, SDL_MapRGB(surf->format, COLOR_RED));
+    s_body* sb = s->first;
+    if(sb)
+        do
+        {
+            r.x = sb->pos_x * EDGE;
+            r.y = sb->pos_y * EDGE;
+            r.w = EDGE;
+            r.h = EDGE;
+            SDL_FillRect(surf, &r, SDL_MapRGB(surf->format, COLOR_RED));
+            sb = sb->next;
+        }
+        while(sb != s->first);
+
 }
 
 void check_collision(snake* s)
@@ -77,6 +90,9 @@ int main(int argc, char* args[])
                             break;
                         case SDLK_ESCAPE:
                             quit = TRUE;
+                            break;
+                        case SDLK_SPACE:
+                            add_body_to_snake(s);
                             break;
                     }
                     break;

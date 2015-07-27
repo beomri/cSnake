@@ -14,6 +14,7 @@
 
 #define COLOR_BROWN 175,145,70
 #define COLOR_RED 205,40,40
+#define COLOR_LIGHT_RED 150,40,40
 
 
 #define DIR_UP -2
