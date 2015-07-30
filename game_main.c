@@ -16,11 +16,7 @@ void draw_all(SDL_Surface* surf ,snake* s)
 {
     SDL_FillRect(surf, NULL, SDL_MapRGB(surf->format, COLOR_BROWN));
 
-    SDL_Rect r = {.x = s->head->pos_x * EDGE,
-                  .y = s->head->pos_y * EDGE,
-                  .w = EDGE,
-                  .h = EDGE};
-    SDL_FillRect(surf, &r, SDL_MapRGB(surf->format, COLOR_RED));
+    SDL_Rect r;
     s_body* sb = s->first;
     if(sb)
         do
@@ -29,10 +25,15 @@ void draw_all(SDL_Surface* surf ,snake* s)
             r.y = sb->pos_y * EDGE;
             r.w = EDGE;
             r.h = EDGE;
-            SDL_FillRect(surf, &r, SDL_MapRGB(surf->format, COLOR_RED));
+            SDL_FillRect(surf, &r, SDL_MapRGB(surf->format, COLOR_LIGHT_RED));
             sb = sb->next;
         }
         while(sb != s->first);
+    r.x = s->head->pos_x * EDGE;
+    r.y = s->head->pos_y * EDGE;
+    r.w = EDGE;
+    r.h = EDGE;
+    SDL_FillRect(surf, &r, SDL_MapRGB(surf->format, COLOR_RED));
 
 }
 
@@ -116,4 +117,3 @@ int main(int argc, char* args[])
     error:
     return -1;
 }
-

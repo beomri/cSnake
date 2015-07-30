@@ -9,7 +9,7 @@
 #define W_WIDTH 600
 #define W_HEIGHT 420
 
-#define FPS  20
+#define FPS  30
 #define TICKS_PER_FRAME 1000/FPS
 
 #define COLOR_BROWN 175,145,70
