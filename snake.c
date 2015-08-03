@@ -66,12 +66,11 @@ void move_snake(snake* c_snake)
     c_snake->first->pos_y = temp_y;
 }
 
-void free_snake(snake* new_snake)
+void free_body(snake* c_snake)
 {
-    free(new_snake->head);
-    if(new_snake->first)
-        new_snake->first->prev->next = NULL;
-    s_body* temp = new_snake->first;
+    if(c_snake->first)
+        c_snake->first->prev->next = NULL;
+    s_body* temp = c_snake->first;
     s_body* next = NULL;
     while(temp)
     {
@@ -79,20 +78,12 @@ void free_snake(snake* new_snake)
         free(temp);
         temp = next;
     }
-    free(new_snake);
+    c_snake->first = NULL;
 }
 
-void print_snake(snake* c_snake)
+void free_snake(snake* c_snake)
 {
-    printf("Head: (%d,%d)\n", c_snake->head->pos_x, c_snake->head->pos_y );
-    if (!c_snake->first)
-        return;
-    printf("Body:\n");
-    printf("(%d,%d)\n", c_snake->first->pos_x, c_snake->first->pos_y );
-    s_body* temp = c_snake->first->next;
-    while(temp != c_snake->first)
-    {
-        printf("(%d,%d)\n", temp->pos_x, temp->pos_y );
-        temp = temp->next;
-    }
+    free(c_snake->head);
+    free_body(c_snake);
+    free(c_snake);
 }
