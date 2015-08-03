@@ -6,6 +6,8 @@
 
 
 SDL_Renderer* gRenderer = NULL;
+SDL_Texture* text_body = NULL;
+SDL_Texture* text_head = NULL;
 
 
 void tick(Uint32 time)
@@ -14,10 +16,15 @@ void tick(Uint32 time)
         SDL_Delay(time + TICKS_PER_FRAME - SDL_GetTicks());
 }
 
+SDL_Texture* load_texture(char* f_name)
+{
+    SDL_Surface* temp_surf = SDL_LoadBMP(f_name);
+    SDL_SetColorKey(temp_surf, SDL_TRUE, SDL_MapRGB(temp_surf->format, 130, 130, 130));
+    return SDL_CreateTextureFromSurface(gRenderer, temp_surf);
+}
 
 void draw_all(snake* s)
 {
-    //SDL_FillRect(surf, NULL, SDL_MapRGB(surf->format, COLOR_BROWN));
     SDL_SetRenderDrawColor( gRenderer, COLOR_BROWN, 0xFF );
     SDL_RenderClear(gRenderer);
 
@@ -30,9 +37,7 @@ void draw_all(snake* s)
             r.y = sb->pos_y * EDGE;
             r.w = EDGE;
             r.h = EDGE;
-            //SDL_FillRect(surf, &r, SDL_MapRGB(surf->format, COLOR_LIGHT_RED));
-            SDL_SetRenderDrawColor(gRenderer, COLOR_LIGHT_RED, 0xFF);
-            SDL_RenderFillRect(gRenderer, &r);
+            SDL_RenderCopy(gRenderer, text_body, NULL, &r);
             sb = sb->next;
         }
         while(sb != s->first);
@@ -40,9 +45,22 @@ void draw_all(snake* s)
     r.y = s->head->pos_y * EDGE;
     r.w = EDGE;
     r.h = EDGE;
-    //SDL_FillRect(surf, &r, SDL_MapRGB(surf->format, COLOR_RED));
-    SDL_SetRenderDrawColor(gRenderer, COLOR_RED, 0xFF);
-    SDL_RenderFillRect(gRenderer, &r);
+    switch(s->dir)
+    {
+        case 0:
+        case DIR_UP:
+            SDL_RenderCopy(gRenderer, text_head, NULL, &r);
+            break;
+        case DIR_DOWN:
+            SDL_RenderCopyEx(gRenderer, text_head, NULL, &r, 180.0, NULL, SDL_FLIP_NONE);
+            break;
+        case DIR_RIGHT:
+            SDL_RenderCopyEx(gRenderer, text_head, NULL, &r, 90.0, NULL, SDL_FLIP_NONE);
+            break;
+        case DIR_LEFT:
+            SDL_RenderCopyEx(gRenderer, text_head, NULL, &r, 270.0, NULL, SDL_FLIP_NONE);
+            break;
+    }
 }
 
 void check_collision(snake* s)
@@ -74,8 +92,8 @@ int main(int argc, char* args[])
     gRenderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
     check(gRenderer,"couldnt create renderer");
 
-    //SDL_Surface* surf = SDL_GetWindowSurface(window);
-    //check(surf, "Couldn't find window surface");
+    text_head = load_texture("resources/head.bmp");
+    text_body = load_texture("resources/body.bmp");
 
     while(!quit)
     {
@@ -113,7 +131,6 @@ int main(int argc, char* args[])
 
         move_snake(s);
         draw_all(s);
-        //SDL_UpdateWindowSurface(window);
         SDL_RenderPresent(gRenderer);
 
         tick(start_frame);
@@ -122,6 +139,8 @@ int main(int argc, char* args[])
     }
 
     free_snake(s);
+    SDL_DestroyTexture( text_head );
+    SDL_DestroyTexture( text_body );
     SDL_DestroyRenderer( gRenderer );
     SDL_DestroyWindow(window);
     SDL_Quit();
