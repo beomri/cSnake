@@ -4,6 +4,7 @@
 #include "resources/body_img.h"
 #include "resources/head_img.h"
 #include "resources/food_img.h"
+#include "resources/font_sans.h"
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -13,9 +14,14 @@ SDL_Renderer* gRenderer = NULL;
 SDL_Texture* text_body = NULL;
 SDL_Texture* text_head = NULL;
 SDL_Texture* text_food = NULL;
+SDL_Texture* text_text = NULL;
+SDL_Color red = {250,0,0};
+TTF_Font *gFont = NULL;
+
 snake* s = NULL;
 Uint32 start_frame = 0;
 SDL_Event e;
+
 int food_x = 0;
 int food_y = 0;
 int lock_dir = FALSE;
@@ -31,6 +37,13 @@ void load_texture(SDL_Texture** textr, const char* img_name, int size)
     SDL_RWops *rw = SDL_RWFromConstMem(img_name, size);
     SDL_Surface* temp_surf = SDL_LoadBMP_RW(rw, TRUE);
     SDL_SetColorKey(temp_surf, SDL_TRUE, SDL_MapRGB(temp_surf->format, 130, 130, 130));
+    *textr = SDL_CreateTextureFromSurface(gRenderer, temp_surf);
+    SDL_FreeSurface(temp_surf);
+}
+
+void update_text_texture(SDL_Texture** textr, char* text)
+{
+    SDL_Surface* temp_surf = TTF_RenderText_Solid( gFont, text, red );
     *textr = SDL_CreateTextureFromSurface(gRenderer, temp_surf);
     SDL_FreeSurface(temp_surf);
 }
@@ -76,6 +89,7 @@ void draw_all()
             SDL_RenderCopyEx(gRenderer, text_head, NULL, &r, 270.0, NULL, SDL_FLIP_NONE);
             break;
     }
+    SDL_RenderCopy(gRenderer, text_text,NULL,NULL);
 }
 
 int check_collision_body(int x, int y)
@@ -132,8 +146,10 @@ void exit_game()
     SDL_DestroyTexture(text_head);
     SDL_DestroyTexture(text_body);
     SDL_DestroyTexture(text_food);
+    SDL_DestroyTexture(text_text);
     SDL_DestroyRenderer(gRenderer);
     SDL_DestroyWindow(g_window);
+    TTF_Quit();
     SDL_Quit();
 }
 
@@ -206,6 +222,9 @@ int run_game()
 int main(int argc, char* args[])
 {
     check(SDL_Init(SDL_INIT_VIDEO) == 0, "Couldn't initialise SDL!");
+    TTF_Init();
+
+    gFont = TTF_OpenFontRW(SDL_RWFromConstMem(font_sans, font_sans_length), 1, 16);
 
     g_window = SDL_CreateWindow("snake", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, W_WIDTH, W_HEIGHT, SDL_WINDOW_SHOWN);
     check(g_window,"Couldn't create window!");
@@ -216,6 +235,7 @@ int main(int argc, char* args[])
     load_texture(&text_head, img_head, img_head_length);
     load_texture(&text_body, img_body, img_body_length);
     load_texture(&text_food, img_food, img_food_length);
+    update_text_texture(&text_text,"Hello");
 
     int g_status = 0;
 
