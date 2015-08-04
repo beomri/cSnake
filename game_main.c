@@ -18,6 +18,7 @@ Uint32 start_frame = 0;
 SDL_Event e;
 int food_x = 0;
 int food_y = 0;
+int lock_dir = FALSE;
 
 void tick(Uint32 time)
 {
@@ -93,8 +94,8 @@ int check_collision_body(int x, int y)
 
 int check_collision()
 {
-    if(s->head->pos_x < 0 || s->head->pos_x + 1 > W_WIDTH / EDGE ||
-       s->head->pos_y < 0 || s->head->pos_y + 1 > W_HEIGHT / EDGE)
+    if(s->head->pos_x < 0 || s->head->pos_x + 1 > G_WIDTH ||
+       s->head->pos_y < 0 || s->head->pos_y + 1 > G_HEIGHT)
         return TRUE;
     return check_collision_body(s->head->pos_x, s->head->pos_y);
 }
@@ -116,6 +117,15 @@ int check_food()
     return FALSE;
 }
 
+void send_change_dir(int dir)
+{
+    if (!lock_dir)
+    {
+        change_dir(s, dir);
+        lock_dir = TRUE;
+    }
+}
+
 void exit_game()
 {
     free_snake(s);
@@ -133,6 +143,10 @@ int run_game()
     int points = 0;
     s = create_snake((G_WIDTH / 2) - 2, G_HEIGHT / 2);
     s->dir = DIR_RIGHT;
+    add_body_to_snake(s);
+    move_snake(s);
+    add_body_to_snake(s);
+    move_snake(s);
     s->dir = 0;
     place_food();
     while(!lost)
@@ -170,6 +184,7 @@ int run_game()
         }
 
         move_snake(s);
+        lock_dir = FALSE;
         draw_all();
         SDL_RenderPresent(gRenderer);
         lost = check_collision();
