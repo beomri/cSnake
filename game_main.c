@@ -6,13 +6,18 @@
 #include "resources/food_img.h"
 #include <stdio.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
-
+SDL_Window* g_window = NULL;
 SDL_Renderer* gRenderer = NULL;
 SDL_Texture* text_body = NULL;
 SDL_Texture* text_head = NULL;
 SDL_Texture* text_food = NULL;
-
+snake* s = NULL;
+Uint32 start_frame = 0;
+SDL_Event e;
+int food_x = 0;
+int food_y = 0;
 
 void tick(Uint32 time)
 {
@@ -29,37 +34,40 @@ void load_texture(SDL_Texture** textr, const char* img_name, int size)
     SDL_FreeSurface(temp_surf);
 }
 
-void draw_all(snake* s)
+void draw_all()
 {
     SDL_SetRenderDrawColor( gRenderer, COLOR_BROWN, 0xFF );
     SDL_RenderClear(gRenderer);
 
     SDL_Rect r;
+    r.w = EDGE;
+    r.h = EDGE;
     s_body* sb = s->first;
     if(sb)
         do
         {
             r.x = sb->pos_x * EDGE;
             r.y = sb->pos_y * EDGE;
-            r.w = EDGE;
-            r.h = EDGE;
             SDL_RenderCopy(gRenderer, text_body, NULL, &r);
             sb = sb->next;
         }
         while(sb != s->first);
+
+    r.x = food_x * EDGE;
+    r.y = food_y * EDGE;
+    SDL_RenderCopy(gRenderer, text_food, NULL ,&r);
+
     r.x = s->head->pos_x * EDGE;
     r.y = s->head->pos_y * EDGE;
-    r.w = EDGE;
-    r.h = EDGE;
     switch(s->dir)
     {
-        case 0:
         case DIR_UP:
             SDL_RenderCopy(gRenderer, text_head, NULL, &r);
             break;
         case DIR_DOWN:
             SDL_RenderCopyEx(gRenderer, text_head, NULL, &r, 180.0, NULL, SDL_FLIP_NONE);
             break;
+        case 0:
         case DIR_RIGHT:
             SDL_RenderCopyEx(gRenderer, text_head, NULL, &r, 90.0, NULL, SDL_FLIP_NONE);
             break;
@@ -69,47 +77,71 @@ void draw_all(snake* s)
     }
 }
 
-void check_collision(snake* s)
+int check_collision_body(int x, int y)
 {
-    if(s->head->pos_x < 0 || s->head->pos_x > W_WIDTH / EDGE ||
-       s->head->pos_y < 0 || s->head->pos_y > W_HEIGHT / EDGE)
-    {
-        free_body(s);
-        change_dir(s,0);
-        s->head->pos_x = 8;
-        s->head->pos_y = 8;
-    }
+    s_body* sb = s->first;
+    if(sb)
+        do
+        {
+            if (x == sb->pos_x && y == sb->pos_y)
+                return TRUE;
+            sb = sb->next;
+        }
+        while(sb != s->first);
+    return FALSE;
 }
 
-int main(int argc, char* args[])
+int check_collision()
 {
-    snake* s = create_snake(8,8);
+    if(s->head->pos_x < 0 || s->head->pos_x + 1 > W_WIDTH / EDGE ||
+       s->head->pos_y < 0 || s->head->pos_y + 1 > W_HEIGHT / EDGE)
+        return TRUE;
+    return check_collision_body(s->head->pos_x, s->head->pos_y);
+}
 
-    int quit = FALSE;
+void place_food()
+{
+    do
+    {
+    food_x = rand() % G_WIDTH;
+    food_y = rand() % G_HEIGHT;
+    }
+    while(check_collision_body(food_x, food_y));
+}
 
-    Uint32 start_frame = 0;
+int check_food()
+{
+    if(s->head->pos_x == food_x && s->head->pos_y == food_y)
+        return TRUE;
+    return FALSE;
+}
 
-    SDL_Event e;
+void exit_game()
+{
+    free_snake(s);
+    SDL_DestroyTexture(text_head);
+    SDL_DestroyTexture(text_body);
+    SDL_DestroyTexture(text_food);
+    SDL_DestroyRenderer(gRenderer);
+    SDL_DestroyWindow(g_window);
+    SDL_Quit();
+}
 
-    check(SDL_Init(SDL_INIT_VIDEO) == 0, "Couldn't initialise SDL!");
-
-    SDL_Window* window = SDL_CreateWindow("snake", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, W_WIDTH, W_HEIGHT, SDL_WINDOW_SHOWN);
-    check(window,"Couldn't create window!");
-
-    gRenderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
-    check(gRenderer,"couldnt create renderer");
-
-    load_texture(&text_head, img_head, img_head_length);
-    load_texture(&text_body, img_body, img_body_length);
-    load_texture(&text_food, img_food, img_food_length);
-
-    while(!quit)
+int run_game()
+{
+    int lost = FALSE;
+    int points = 0;
+    s = create_snake((G_WIDTH / 2) - 2, G_HEIGHT / 2);
+    s->dir = DIR_RIGHT;
+    s->dir = 0;
+    place_food();
+    while(!lost)
     {
         while(SDL_PollEvent(&e) != 0)
         {
             switch(e.type){
                 case SDL_QUIT:
-                    quit = TRUE;
+                    return -1;
                     break;
                 case SDL_KEYDOWN:
                     switch(e.key.keysym.sym)
@@ -127,7 +159,7 @@ int main(int argc, char* args[])
                             change_dir(s,DIR_LEFT);
                             break;
                         case SDLK_ESCAPE:
-                            quit = TRUE;
+                            return -1;
                             break;
                         case SDLK_SPACE:
                             add_body_to_snake(s);
@@ -138,20 +170,51 @@ int main(int argc, char* args[])
         }
 
         move_snake(s);
-        draw_all(s);
+        draw_all();
         SDL_RenderPresent(gRenderer);
+        lost = check_collision();
+        if (check_food())
+        {
+            points++;
+            place_food();
+            add_body_to_snake(s);
+        }
 
         tick(start_frame);
-        check_collision(s);
         start_frame = SDL_GetTicks();
     }
-
     free_snake(s);
-    SDL_DestroyTexture( text_head );
-    SDL_DestroyTexture( text_body );
-    SDL_DestroyRenderer( gRenderer );
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    s = NULL;
+    return points;
+}
+
+int main(int argc, char* args[])
+{
+    check(SDL_Init(SDL_INIT_VIDEO) == 0, "Couldn't initialise SDL!");
+
+    g_window = SDL_CreateWindow("snake", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, W_WIDTH, W_HEIGHT, SDL_WINDOW_SHOWN);
+    check(g_window,"Couldn't create window!");
+
+    gRenderer = SDL_CreateRenderer( g_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
+    check(gRenderer,"couldnt create renderer");
+
+    load_texture(&text_head, img_head, img_head_length);
+    load_texture(&text_body, img_body, img_body_length);
+    load_texture(&text_food, img_food, img_food_length);
+
+    int g_status = 0;
+
+    while(TRUE)
+    {
+        g_status = run_game();
+        if (g_status == -1)
+        {
+            exit_game();
+            return 0;
+        }
+    }
+
+    exit_game();
     return 0;
 
     error:

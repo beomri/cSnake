@@ -47,7 +47,8 @@ int add_body_to_snake(snake* c_snake)
 
 void change_dir(snake* c_snake, int dir)
 {
-    c_snake->dir = dir;
+    if(dir != -c_snake->dir)
+        c_snake->dir = dir;
 }
 
 void move_snake(snake* c_snake)

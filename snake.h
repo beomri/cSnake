@@ -21,5 +21,7 @@ int add_body_to_snake(snake* c_snake);
 void free_snake(snake* new_snake);
 void move_snake(snake* c_snake);
 void print_snake(snake* c_snake);
+void change_dir(snake* c_snake, int dir);
+void free_body(snake* c_snake);
 
 #endif

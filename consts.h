@@ -5,12 +5,14 @@
 #define FALSE 0
 
 #define EDGE 30
+#define G_WIDTH 21
+#define G_HEIGHT 15
 
-#define W_WIDTH 600
-#define W_HEIGHT 420
+#define  W_WIDTH G_WIDTH * EDGE
+#define  W_HEIGHT G_HEIGHT * EDGE
 
-#define FPS  16
-#define TICKS_PER_FRAME 1000/FPS
+#define FPS  12
+#define TICKS_PER_FRAME 1000 / FPS
 
 #define COLOR_BROWN 175,145,70
 #define COLOR_RED 205,40,40
